@@ -1,12 +1,22 @@
-cmake_minimum_required(VERSION 3.16)
-project(px4_from_scratch LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+project(px4 CXX C ASM)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(uorb_test test/uorb_test.cpp)
-target_include_directories(uorb_test PRIVATE ${CMAKE_SOURCE_DIR}/src)
+set(PX4_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE FILEPATH "PX4 source directory" FORCE)
+set(CMAKE_MODULE_PATH ${PX4_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+include(px4_add_module)
 
-enable_testing()
-add_test(NAME uorb_test COMMAND uorb_test)
+# Debt: main sets this from kconfig when TESTING is enabled.
+set(PX4_TESTING "1" CACHE INTERNAL "testing enabled" FORCE)
+
+# Debt: main passes EXCLUDE_FROM_ALL. Left off so `cmake --build` builds uorb_tests.
+add_subdirectory(platforms)
+
+# Debt: main calls include(CTest) only when CMAKE_TESTING is on, and does not add_test this module.
+include(CTest)
+if(BUILD_TESTING)
+	add_test(NAME uorb_tests COMMAND uorb_tests)
+endif()

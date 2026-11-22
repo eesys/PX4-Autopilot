@@ -1,0 +1,12 @@
+---
+description: Create a git commit only when the user explicitly asks
+alwaysApply: true
+---
+
+# Commits
+
+Create a git commit only when the user explicitly asks for one in the current message.
+
+Finishing a task, a plan, or a roadmap step leaves the changes uncommitted. Say that the work is ready to commit, and stop there.
+
+Do not amend, and do not push, unless the user explicitly asks for that in the current message.

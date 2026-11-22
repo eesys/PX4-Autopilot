@@ -1,0 +1,14 @@
+---
+description: This branch exists to learn main until its source matches main
+alwaysApply: true
+---
+
+# Learn main
+
+`learn/from-scratch` exists to learn the `main` branch source. The finished tree must be source-identical to `main`.
+
+Small steps may temporarily omit behavior inside a file that already exists on `main`. Record each omission as debt. Later steps pay that debt back. Do not design a permanent subset, rename the architecture, or stop at a simplified rewrite.
+
+Do not add a source path that `main` does not have. `src/uorb.hpp` is not a uORB file on `main`.
+
+`main` is the PX4-Autopilot checkout at `../PX4-Autopilot`. Compare source against that tree.

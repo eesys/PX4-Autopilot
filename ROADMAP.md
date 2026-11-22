@@ -1,6 +1,6 @@
 # 路线图
 
-每一步只做一件事：先读这一步列出的上游文件，再写能测的最小行为，最后在这里记下保住了什么、先放下了什么。下一步另开一轮。
+目的是学会 `main` 的源码。每一步只做一件事：先读这一步列出的上游文件，再写能测的最小行为，最后在这里记下保住了什么、先放下了什么。先放下的部分是欠账，后面的步骤要补回。全部补完时，这棵树的源码与 `main` 完全一致。下一步另开一轮。
 
 上游检出：`../PX4-Autopilot`（`main`）。
 
@@ -24,7 +24,18 @@
 - `update()` 只在有新发布时拷贝；`copy()` 在已发布过后总能拿到最新一份，并把订阅者追到当前 generation
 - 后创建的订阅者仍能读到已经发布的最新一份；有数据时初始 generation 是当前值减 1
 
-先放下：多实例话题、`o_queue > 1`、`SubscriptionCallback` / `WorkItem`、`/obj` 设备节点、`.msg` 代码生成、原子操作和节点锁。闭环先放在一个线程里。
+代码只放在 `main` 已有的路径里：`uORB.h`、`Publication.hpp`、`Subscription.hpp`、`uORBDeviceNode.hpp`。类名是 `DeviceNode`。测试在 `platforms/common/uORB/uORB_tests/`，入口是 `uorb_tests_main`。
+
+先放下：
+
+- 多实例话题、`o_queue > 1`、`SubscriptionCallback` / `WorkItem`、`/obj` 设备节点、`.msg` 代码生成、原子操作和节点锁。闭环先放在一个线程里
+- `DeviceNode` 不继承 `cdev::CDev`，`publish_data` 代替带 `filp` 的 `write`
+- 每种 C++ 类型一个节点，代替 `orb_metadata` / `ORB_ID`
+- 同目录其余文件还没建。`write` 和 `orb_data_copy` 的行为先写在上面的头文件里
+- `uORB_tests_main.cpp` 末尾的主机 `main` 只转发到 `uorb_tests_main`
+- 根 `CMakeLists.txt` 先把 `PX4_TESTING` 打开；`add_subdirectory(platforms)` 没有 `EXCLUDE_FROM_ALL`；用 `include(CTest)` 和 `add_test` 让 README 里的 `ctest` 能跑
+- `cmake/px4_add_module.cmake` 先把 `MAIN` 编成可执行文件。`main` 上它编的是名为 `MODULE` 的静态库
+- `platforms/common/CMakeLists.txt` 和 `platforms/common/uORB/CMakeLists.txt` 只有进入子目录的那几行，库本身还没建
 
 ## 2. 闭环用的结构体
 
@@ -68,4 +79,4 @@
 
 初始有滚转倾角，姿态设定是水平。若干秒后倾角和角速度回到附近。到这里第一阶段结束。
 
-位置环、EKF2、摇杆、参数、NuttX、驱动、Gazebo 锁步排在这之后。
+第一阶段到此为止。位置环、EKF2、摇杆、参数、NuttX、驱动、Gazebo 锁步，以及前面各步先放下的部分，继续按同样的方式补回，直到源码与 `main` 完全一致。
