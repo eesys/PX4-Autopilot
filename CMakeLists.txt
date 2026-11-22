@@ -12,6 +12,8 @@ include(px4_add_module)
 # Debt: main sets this from kconfig when TESTING is enabled.
 set(PX4_TESTING "1" CACHE INTERNAL "testing enabled" FORCE)
 
+add_subdirectory(msg EXCLUDE_FROM_ALL)
+
 # Debt: main passes EXCLUDE_FROM_ALL. Left off so `cmake --build` builds uorb_tests.
 add_subdirectory(platforms)
 

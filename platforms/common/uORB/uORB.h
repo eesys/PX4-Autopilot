@@ -1,7 +1,7 @@
 #pragma once
 
 // One process-wide DeviceNode per message type stands in for orb_metadata /
-// ORB_ID. .msg codegen is not in this step.
+// ORB_ID. Generated topic headers do not emit ORB_DECLARE.
 
 #include "uORBDeviceNode.hpp"
 

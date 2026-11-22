@@ -51,6 +51,33 @@
 - `msg/versioned/VehicleStatus.msg`（`ARMING_STATE_DISARMED = 1`，`ARMING_STATE_ARMED = 2`）
 - `msg/VehicleControlMode.msg`
 
+保住的行为：
+
+- 这九个消息在 `main` 的路径上。头文件生成到 `build/uORB/topics`，包含方式是 `<uORB/topics/*.h>`，别名是 `px4::msg::...`
+- `vehicle_attitude.q`：Hamilton 四元数，顺序 `(w, x, y, z)`，表示 FRD 机体到 NED
+- `vehicle_attitude_setpoint`：`q_d`，以及 `thrust_body`（多旋翼里 z 轴负向是油门需求）
+- `vehicle_angular_velocity.xyz`：FRD 角速度，单位 rad/s
+- `vehicle_rates_setpoint`：`roll`、`pitch`、`yaw`，以及 `thrust_body`
+- `vehicle_torque_setpoint.xyz`、`vehicle_thrust_setpoint.xyz`
+- `actuator_motors`：`NUM_CONTROLS = 12`，`control` 里的 NaN 表示上锁停转
+- `vehicle_status`：`ARMING_STATE_DISARMED = 1`，`ARMING_STATE_ARMED = 2`
+- `vehicle_control_mode`：`flag_armed`、`flag_control_attitude_enabled`、`flag_control_rates_enabled`、`flag_control_allocation_enabled`
+- 这些结构体经现有的 `Publication` / `Subscription` 按字节拷贝
+
+先放下：
+
+- `VehicleAttitude`：`MESSAGE_VERSION`、`timestamp_sample`、`delta_q_reset`、`quat_reset_counter`、`TOPICS`
+- `VehicleAttitudeSetpoint`：`MESSAGE_VERSION`、`yaw_sp_move_rate`、`TOPICS`
+- `VehicleAngularVelocity`：`MESSAGE_VERSION`、`timestamp_sample`、`xyz_derivative`、`TOPICS`
+- `VehicleRatesSetpoint`：`MESSAGE_VERSION`、`reset_integral`。`main` 上这个文件在 `msg/versioned/`
+- `VehicleTorqueSetpoint`、`VehicleThrustSetpoint`：`timestamp_sample`、`TOPICS`
+- `ActuatorMotors`：`MESSAGE_VERSION`、`timestamp_sample`、`reversible_flags`、`ACTUATOR_FUNCTION_MOTOR1`
+- `VehicleStatus`：`MESSAGE_VERSION`，以及 `timestamp` 和 `arming_state` 以外的字段
+- `VehicleControlMode`：上面四个标志以外的标志
+- `Tools/msg/px_generate_uorb_topic_files.py` 不跑 EmPy 模板：字段按文件顺序，不加 padding，不生成 `ORB_DECLARE`、`msg.cpp`、`uORBTopics`、IDL
+- `TOPICS` 别名还没有。一种 C++ 类型仍是一个节点
+- `msg/CMakeLists.txt` 只列出这九个文件，不建 `uorb_msgs`
+
 ## 3. 固定步长的单线程调度
 
 模块按固定顺序 `Run(dt)`。对照 `mc_att_control` 里的 `SubscriptionCallbackWorkItem`：上游是姿态发布把控制器唤醒。
