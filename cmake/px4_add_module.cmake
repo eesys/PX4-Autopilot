@@ -7,10 +7,12 @@ function(px4_add_module)
 	add_executable(${PX4_MAIN} ${PX4_SRCS})
 	target_include_directories(${PX4_MAIN} PRIVATE
 		${CMAKE_SOURCE_DIR}/platforms/common
+		${CMAKE_SOURCE_DIR}/platforms/common/include
 		${CMAKE_BINARY_DIR}
 	)
-	# Debt: main gets this include from px4_add_common_flags. The generated
-	# topic headers live at ${CMAKE_BINARY_DIR}/uORB/topics.
+	# Debt: main gets these includes from px4_add_common_flags.
+	# Topic headers are generated at ${CMAKE_BINARY_DIR}/uORB/topics.
+	# WorkItem lives under platforms/common/include.
 	if(TARGET uorb_headers)
 		add_dependencies(${PX4_MAIN} uorb_headers)
 	endif()

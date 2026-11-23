@@ -80,7 +80,30 @@
 
 ## 3. 固定步长的单线程调度
 
-模块按固定顺序 `Run(dt)`。对照 `mc_att_control` 里的 `SubscriptionCallbackWorkItem`：上游是姿态发布把控制器唤醒。
+对照：
+
+- `platforms/common/include/px4_platform_common/px4_work_queue/WorkItem.hpp`（`Run`）
+- `platforms/common/include/px4_platform_common/px4_work_queue/WorkQueue.hpp`（`Run` 按队列调用）
+- `platforms/common/uORB/SubscriptionCallback.hpp`（`SubscriptionCallbackWorkItem::call` 里 `ScheduleNow`）
+- `src/modules/mc_att_control/mc_att_control.hpp`（`_vehicle_attitude_sub` 唤醒姿态环）
+
+保住的行为：
+
+- `WorkItem::Run(float dt)` 是模块的一步
+- `WorkQueue::Add` 按调用顺序记下模块
+- `WorkQueue::Run(dt)` 在调用它的线程上按这个顺序各调用一次，每个模块拿到同一次传入的 `dt`
+- 后 `Add` 的模块从下一次 `Run` 起排在末尾
+- 测试在 `platforms/common/px4_work_queue/test/`，入口是 `wqueue_test_main`
+
+先放下：
+
+- 上游的 `Run()` 没有 `dt` 参数。模块自己用 `hrt` 算周期
+- `SubscriptionCallbackWorkItem` 还没建。姿态发布不会 `ScheduleNow()`，没有工作队列线程、锁、信号量
+- 没有 `ScheduleNow` / `ScheduleClear`、按名字排序、多条 `WorkQueue`、`hrt`、lockstep
+- `WorkItem.cpp`、`WorkQueue.cpp` 还没建。行为写在上面两个头文件里
+- `wqueue_test.h` 还不是 `WQueueTest`。`wqueue_main.cpp` 末尾的主机 `main` 只转发到 `wqueue_test_main`
+- `platforms/common/CMakeLists.txt` 仍没有 `px4_platform` 库。`px4_work_queue/CMakeLists.txt` 还没编那个库
+- 根 `CMakeLists.txt` 用 `add_test` 跑 `wqueue_test`。`main` 不这么做
 
 ## 4. 刚体机体
 
