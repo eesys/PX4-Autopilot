@@ -107,7 +107,27 @@
 
 ## 4. 刚体机体
 
-积分力矩和推力，发布姿态和角速度。开环测试：常值力矩让角速度增大。先不接 Gazebo。
+对照：
+
+- `src/modules/simulation/simulator_sih/sih.hpp`
+- `src/modules/simulation/simulator_sih/sih.cpp`（`equations_of_motion`：四元数乘角速度增量，角速度加角加速度乘 `dt`）
+
+保住的行为：
+
+- `Sih` 是一个 `WorkItem`。每拍读取 `vehicle_torque_setpoint` 和 `vehicle_thrust_setpoint`
+- 质量和对角惯量都是 1。拧力直接变成角加速度，拉力先转到 NED 再积分成速度
+- 用本拍开始时的角速度更新四元数 `q`（机体到 NED），再更新角速度
+- 发布 `vehicle_attitude` 和 `vehicle_angular_velocity`
+- 开环：常值滚转拧力让 `xyz[0]` 一拍比一拍大，姿态离开单位四元数。向上的拉力（机体 Z 为负）让 NED 的向下速度变负
+- 测试编成可执行文件 `simulator_sih`
+
+先放下：
+
+- 重力、空气动力、地面、`w × Iw`、惯量不是单位阵、位置和经纬高
+- 不接 Gazebo。不发布 `vehicle_local_position`；NED 速度只留在 `velocity_ned()`
+- `Sih` 继承 `WorkItem`，上游是 `ModuleBase`，自己的循环里算 `dt`
+- 传感器、噪声、执行器模型、参数、失效注入都没有
+- `src/` 的 CMake 只为了走进 `simulator_sih`。上游由板级构建进入整个 `src`
 
 ## 5. 姿态环
 

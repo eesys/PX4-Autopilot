@@ -1,0 +1,19 @@
+---
+description: Explain each new concept in GUIDE.md when an iteration introduces it
+alwaysApply: true
+---
+
+# Explain new concepts
+
+The reader writes software and has no drone background. When an iteration uses a concept the guide does not already explain, add that explanation to `GUIDE.md` in the same change.
+
+A new concept is a name, mechanism, or physical idea the step relies on. Examples: SIH, a coordinate frame, a message, a controller, an algorithm.
+
+Write it in plain Chinese the first time the guide mentions it:
+
+- What the words expand to
+- What problem it solves, with one concrete picture
+- Where it sits in the attitude loop
+- What this step keeps, and what is still left out
+
+Also add one line to the glossary. Do not leave the explanation only in the chat reply.
